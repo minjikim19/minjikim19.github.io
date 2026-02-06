@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const nextConfig = {
+  output: "export",
+  images: { unoptimized: true },
+  basePath: "/minjikim19.github.io",
+  assetPrefix: "/minjikim19.github.io/",
 };
 
-export default nextConfig;
+module.exports = nextConfig;
