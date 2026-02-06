@@ -12,25 +12,31 @@ import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import Modal from "@/components/Modal";
 import { AccordionItem } from "@/components/Accordion";
-import { FileText, Github, Linkedin, Mail } from "lucide-react";
+import { ExternalLink, FileText, Github, Linkedin, Mail } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState<string | null>("hero");
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [selectedProjectImageIndex, setSelectedProjectImageIndex] = useState(0);
   const activeSectionRef = useRef<string | null>("hero");
   const [heroTitle, heroSubtitle] = siteData.hero.headline.split(" | ");
+  const reduceMotion = useReducedMotion();
 
   const defaultExpanded = useMemo(
     () =>
       new Set(
         siteData.experience
           .filter((item) => item.defaultExpanded)
-          .map((item) => item.id)
+          .map((item) => item.id),
       ),
-    []
+    [],
   );
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(defaultExpanded);
+  const [expandedLeadershipIds, setExpandedLeadershipIds] = useState<Set<string>>(
+    () => new Set(siteData.leadership.map((item) => item.id)),
+  );
 
   useEffect(() => {
     activeSectionRef.current = activeSection;
@@ -38,27 +44,31 @@ export default function Home() {
 
   useEffect(() => {
     const sections = Array.from(
-      document.querySelectorAll<HTMLElement>("section[data-observe='true']")
+      document.querySelectorAll<HTMLElement>("section[data-observe='true']"),
     );
 
     if (sections.length === 0) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        let nextActive: string | null = activeSectionRef.current;
-        entries.forEach((entry) => {
-          if (
-            entry.intersectionRatio >= 0.4 &&
-            entry.intersectionRatio <= 0.6
-          ) {
-            nextActive = entry.target.id;
-          }
-        });
-        if (nextActive !== activeSectionRef.current) {
-          setActiveSection(nextActive);
+        const visibleAtCenter = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort(
+            (a, b) =>
+              Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top),
+          )[0];
+
+        if (
+          visibleAtCenter &&
+          visibleAtCenter.target.id !== activeSectionRef.current
+        ) {
+          setActiveSection(visibleAtCenter.target.id);
         }
       },
-      { threshold: [0.4, 0.6] }
+      {
+        rootMargin: "-45% 0px -45% 0px",
+        threshold: 0,
+      },
     );
 
     sections.forEach((section) => observer.observe(section));
@@ -66,11 +76,28 @@ export default function Home() {
   }, []);
 
   const activeProject = siteData.projects.find(
-    (project) => project.id === activeProjectId
+    (project) => project.id === activeProjectId,
   );
+
+  const openProjectModal = (projectId: string) => {
+    setSelectedProjectImageIndex(0);
+    setActiveProjectId(projectId);
+  };
 
   const toggleExperience = (id: string) => {
     setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleLeadership = (id: string) => {
+    setExpandedLeadershipIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -100,7 +127,9 @@ export default function Home() {
                 ) : null}
               </h1>
               {siteData.hero.subheadline ? (
-                <p className="muted hero-subcopy">{siteData.hero.subheadline}</p>
+                <p className="muted hero-subcopy">
+                  {siteData.hero.subheadline}
+                </p>
               ) : null}
               <div className="hero-actions">
                 <Button
@@ -110,18 +139,18 @@ export default function Home() {
                   icon={<FileText size={16} aria-hidden="true" />}
                 />
                 <Button
-                  label={siteData.ui.linkedinCta}
-                  href={siteData.links.linkedin as string}
-                  ariaLabel={siteData.ui.linkedinCta}
-                  variant="secondary"
-                  icon={<Linkedin size={16} aria-hidden="true" />}
-                />
-                <Button
                   label={siteData.ui.githubLink}
                   href={siteData.links.github as string}
                   ariaLabel={siteData.ui.githubLink}
                   variant="secondary"
                   icon={<Github size={16} aria-hidden="true" />}
+                />
+                <Button
+                  label={siteData.ui.linkedinCta}
+                  href={siteData.links.linkedin as string}
+                  ariaLabel={siteData.ui.linkedinCta}
+                  variant="secondary"
+                  icon={<Linkedin size={16} aria-hidden="true" />}
                 />
               </div>
             </div>
@@ -129,7 +158,7 @@ export default function Home() {
               <Image
                 src={profilePhoto}
                 alt={`${siteData.meta.title} profile photo`}
-                width={400}
+                width={390}
                 priority
               />
             </div>
@@ -156,38 +185,62 @@ export default function Home() {
 
         <Section id="experience" title={siteData.sectionTitles.experience}>
           <div className="accordion">
-            {siteData.experience.map((item) => {
+            {siteData.experience.map((item, index) => {
               const isOpen = expandedIds.has(item.id);
               const toggleLabel = isOpen
                 ? siteData.ui.accordionClose
                 : siteData.ui.accordionOpen;
 
               return (
-                <AccordionItem
+                <motion.div
                   key={item.id}
-                  id={item.id}
-                  title={`${item.company} — ${item.title}`}
-                  subtitle={
-                    <>
-                      <span>{item.dates}</span>
-                      <span>{item.location}</span>
-                    </>
+                  initial={
+                    reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
                   }
-                  isOpen={isOpen}
-                  onToggle={() => toggleExperience(item.id)}
-                  toggleLabel={toggleLabel}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{
+                    duration: reduceMotion ? 0.01 : 0.5,
+                    ease: "easeOut",
+                    delay: reduceMotion ? 0 : index * 0.18,
+                  }}
                 >
-                  <ul className="list">
-                    {item.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
-                    ))}
-                  </ul>
-                  <div className="badge-row">
-                    {item.keySkills.map((skill) => (
-                      <Badge key={skill} text={skill} />
-                    ))}
-                  </div>
-                </AccordionItem>
+                  <AccordionItem
+                    id={item.id}
+                    title={
+                      <span className="experience-title">
+                        <Image
+                          src={item.logo}
+                          alt={`${item.company} logo`}
+                          width={22}
+                          height={22}
+                          className="experience-logo"
+                        />
+                        <span>{`${item.company} — ${item.title}`}</span>
+                      </span>
+                    }
+                    subtitle={
+                      <>
+                        <span>{item.dates}</span>
+                        <span>{item.location}</span>
+                      </>
+                    }
+                    isOpen={isOpen}
+                    onToggle={() => toggleExperience(item.id)}
+                    toggleLabel={toggleLabel}
+                  >
+                    <ul className="list">
+                      {item.bullets.map((bullet) => (
+                        <li key={bullet}>{bullet}</li>
+                      ))}
+                    </ul>
+                    <div className="badge-row">
+                      {item.keySkills.map((skill) => (
+                        <Badge key={skill} text={skill} />
+                      ))}
+                    </div>
+                  </AccordionItem>
+                </motion.div>
               );
             })}
           </div>
@@ -196,42 +249,110 @@ export default function Home() {
         <Section id="projects" title={siteData.sectionTitles.projects}>
           <div className="grid-5">
             {siteData.projects.map((project) => (
-              <button
+              <div
                 key={project.id}
-                type="button"
                 className="project-card"
-                onClick={() => setActiveProjectId(project.id)}
+                onClick={() => openProjectModal(project.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openProjectModal(project.id);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
                 aria-label={`${siteData.ui.projectOpen} ${project.name}`}
               >
-                <Card>
+                <Card
+                  hoverY={-2}
+                  hoverShadow="0 12px 24px rgba(12, 12, 12, 0.1)"
+                >
                   <h3 className="card-title project-title">
-                    <Image
-                      src={project.logo}
-                      alt=""
-                      width={24}
-                      height={24}
-                      aria-hidden="true"
-                    />
-                    <span>{project.name}</span>
+                    <span className="project-title-main">
+                      <Image
+                        src={project.logo}
+                        alt=""
+                        width={24}
+                        height={24}
+                        aria-hidden="true"
+                      />
+                      <span>{project.name}</span>
+                    </span>
+                    <span className="project-hint-icon" aria-hidden="true">
+                      ↗
+                    </span>
                   </h3>
-                  {project.period ? (
-                    <p className="muted">{project.period}</p>
-                  ) : null}
+                  <button
+                    type="button"
+                    className="project-preview-button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openProjectModal(project.id);
+                    }}
+                    aria-label={`${siteData.ui.projectOpen} ${project.name}`}
+                  >
+                    <Image
+                      src={project.screenshots[0]}
+                      alt={`${project.name} screenshot preview`}
+                      className="project-preview-image"
+                    />
+                  </button>
                   <p>{project.oneLiner}</p>
                 </Card>
-              </button>
+              </div>
             ))}
           </div>
         </Section>
 
         <Section id="leadership" title={siteData.sectionTitles.leadership}>
-          <Card>
-            <ul className="list">
-              {siteData.leadershipBullets.map((bullet) => (
-                <li key={bullet}>{bullet}</li>
-              ))}
-            </ul>
-          </Card>
+          <div className="accordion">
+            {siteData.leadership.map((item) => {
+              const isOpen = expandedLeadershipIds.has(item.id);
+              const toggleLabel = isOpen
+                ? `Collapse leadership details for ${item.organization}`
+                : `Expand leadership details for ${item.organization}`;
+
+              return (
+                <AccordionItem
+                  key={item.id}
+                  id={item.id}
+                  title={item.role}
+                  subtitle={
+                    <>
+                      <span>{item.organization}</span>
+                      <span>{item.dates}</span>
+                    </>
+                  }
+                  isOpen={isOpen}
+                  onToggle={() => toggleLeadership(item.id)}
+                  toggleLabel={toggleLabel}
+                >
+                  {isOpen && item.image ? (
+                    <Image
+                      src={item.image}
+                      alt={`${item.organization} activity`}
+                      width={110}
+                      className="experience-logo"
+                      style={{
+                        float: "right",
+                        marginLeft: 12,
+                        marginBottom: 8,
+                        borderRadius: 12,
+                        border: "1px solid var(--border)",
+                        boxShadow: "0 8px 16px rgba(12, 12, 12, 0.08)",
+                        filter: "saturate(0.9)",
+                      }}
+                    />
+                  ) : null}
+                  <ul className="list">
+                    {item.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                </AccordionItem>
+              );
+            })}
+          </div>
         </Section>
 
         <Section id="contact" title="Contact me!" className="contact-section">
@@ -263,7 +384,9 @@ export default function Home() {
                     ariaLabel={link.ariaLabel}
                     variant="secondary"
                     target={link.href.startsWith("http") ? "_blank" : "_self"}
-                    rel={link.href.startsWith("http") ? "noreferrer" : undefined}
+                    rel={
+                      link.href.startsWith("http") ? "noreferrer" : undefined
+                    }
                     icon={icon}
                   />
                 );
@@ -298,6 +421,56 @@ export default function Home() {
       >
         {activeProject ? (
           <div>
+            {activeProject.screenshots.length === 1 ? (
+              <Image
+                src={activeProject.screenshots[0]}
+                alt={`${activeProject.name} screenshot`}
+                className="modal-project-image"
+              />
+            ) : (
+              <div className="modal-gallery">
+                <div className="modal-gallery-main">
+                  <Image
+                    src={
+                      activeProject.screenshots[
+                        Math.min(
+                          selectedProjectImageIndex,
+                          activeProject.screenshots.length - 1,
+                        )
+                      ]
+                    }
+                    alt={`${activeProject.name} screenshot ${
+                      selectedProjectImageIndex + 1
+                    }`}
+                    className="modal-project-image"
+                  />
+                  <span className="modal-gallery-count" aria-hidden="true">
+                    {selectedProjectImageIndex + 1}/{activeProject.screenshots.length}
+                  </span>
+                </div>
+                <div className="modal-thumbs" role="list">
+                  {activeProject.screenshots.map((screenshot, index) => (
+                    <button
+                      key={`${activeProject.id}-shot-${index + 1}`}
+                      type="button"
+                      className={`modal-thumb${
+                        index === selectedProjectImageIndex ? " active" : ""
+                      }`}
+                      onClick={() => setSelectedProjectImageIndex(index)}
+                      aria-label={`View screenshot ${index + 1} of ${activeProject.screenshots.length}`}
+                    >
+                      <Image
+                        src={screenshot}
+                        alt=""
+                        width={100}
+                        height={60}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <p className="muted">{activeProject.oneLiner}</p>
             <ul className="list">
               {activeProject.bullets.map((bullet) => (
@@ -315,8 +488,10 @@ export default function Home() {
                   label={siteData.ui.liveLink}
                   href={activeProject.links.live}
                   ariaLabel={siteData.ui.liveLink}
+                  variant="secondary"
                   target="_blank"
                   rel="noreferrer"
+                  icon={<ExternalLink size={16} aria-hidden="true" />}
                 />
               ) : null}
               {activeProject.links?.github ? (
@@ -327,6 +502,7 @@ export default function Home() {
                   variant="secondary"
                   target="_blank"
                   rel="noreferrer"
+                  icon={<Github size={16} aria-hidden="true" />}
                 />
               ) : null}
             </div>

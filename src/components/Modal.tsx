@@ -72,6 +72,21 @@ export default function Modal({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousTouchAction = document.body.style.touchAction;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.touchAction = previousTouchAction;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -110,7 +125,7 @@ export default function Modal({
             </svg>
           </button>
         </div>
-        {children}
+        <div className="modal-body">{children}</div>
       </div>
     </div>
   );

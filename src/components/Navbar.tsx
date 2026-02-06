@@ -21,7 +21,7 @@ export default function Navbar({ items, activeId, brand, ui }: NavbarProps) {
   return (
     <header className="navbar">
       <div className="container navbar-inner">
-        <a href="#hero" className="brand" aria-label={brand}>
+        <a href="/" className="brand" aria-label={brand}>
           <Image src={logo} alt={`logo`} height={55} />
         </a>
         <nav aria-label={ui.navLabel}>
