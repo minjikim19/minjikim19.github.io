@@ -1,0 +1,40 @@
+---
+title: "DocuAction MVP: From messy notes to a usable AI workflow"
+date: "2026-02-17"
+summary: "How I shaped a lightweight documentation pipeline into an MVP that turns meeting notes into clear, trackable actions."
+tags:
+  - AI Product
+  - MVP
+  - Workflow
+  - LLM
+featured: true
+---
+
+# The problem I saw
+
+Most teams already write meeting notes, but the follow-through is often the weakest link. I wanted a tiny system that could take raw notes and consistently produce clear actions, owners, and deadlines.
+
+## The MVP goal
+
+The MVP had to be fast to use and easy to trust. I scoped it to three core outputs:
+
+- Actions with owners and deadlines
+- Risks and open questions
+- A short weekly summary
+
+## What worked
+
+I kept the pipeline simple and visible. The app captured notes, ran a single LLM pass, then let people edit the output before it became official.
+
+```text
+Notes in -> LLM draft -> human edit -> action log
+```
+
+## What I would do next
+
+If I were iterating for a second release, I would add two lightweight improvements:
+
+1. Auto-tag actions by project
+2. A reminder view that groups overdue items
+
+The takeaway: a small, reliable workflow beats a complex system that nobody uses.

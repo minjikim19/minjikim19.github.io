@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { siteData } from "../../content/siteData";
 import Image from "next/image";
 import profilePhoto from "../../content/Minji.jpg";
@@ -9,17 +9,14 @@ import Section from "@/components/Section";
 import Card from "@/components/Card";
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
-import Navbar from "@/components/Navbar";
 import Modal from "@/components/Modal";
 import { AccordionItem } from "@/components/Accordion";
 import { ExternalLink, FileText, Github, Linkedin, Mail } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 
 export default function Home() {
-  const [activeSection, setActiveSection] = useState<string | null>("hero");
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [selectedProjectImageIndex, setSelectedProjectImageIndex] = useState(0);
-  const activeSectionRef = useRef<string | null>("hero");
   const [heroTitle, heroSubtitle] = siteData.hero.headline.split(" | ");
   const reduceMotion = useReducedMotion();
 
@@ -37,43 +34,6 @@ export default function Home() {
   const [expandedLeadershipIds, setExpandedLeadershipIds] = useState<Set<string>>(
     () => new Set(siteData.leadership.map((item) => item.id)),
   );
-
-  useEffect(() => {
-    activeSectionRef.current = activeSection;
-  }, [activeSection]);
-
-  useEffect(() => {
-    const sections = Array.from(
-      document.querySelectorAll<HTMLElement>("section[data-observe='true']"),
-    );
-
-    if (sections.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleAtCenter = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort(
-            (a, b) =>
-              Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top),
-          )[0];
-
-        if (
-          visibleAtCenter &&
-          visibleAtCenter.target.id !== activeSectionRef.current
-        ) {
-          setActiveSection(visibleAtCenter.target.id);
-        }
-      },
-      {
-        rootMargin: "-45% 0px -45% 0px",
-        threshold: 0,
-      },
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
 
   const activeProject = siteData.projects.find(
     (project) => project.id === activeProjectId,
@@ -110,12 +70,6 @@ export default function Home() {
 
   return (
     <div className="page">
-      <Navbar
-        items={siteData.nav}
-        activeId={activeSection}
-        brand={siteData.meta.title}
-        ui={siteData.ui}
-      />
       <main>
         <Section id="hero" className="hero">
           <div className="hero-grid">
@@ -127,9 +81,7 @@ export default function Home() {
                 ) : null}
               </h1>
               {siteData.hero.subheadline ? (
-                <p className="muted hero-subcopy">
-                  {siteData.hero.subheadline}
-                </p>
+                <p className="muted hero-subcopy">{siteData.hero.subheadline}</p>
               ) : null}
               <div className="hero-actions">
                 <Button
@@ -194,9 +146,7 @@ export default function Home() {
               return (
                 <motion.div
                   key={item.id}
-                  initial={
-                    reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                  }
+                  initial={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.25 }}
                   transition={{
@@ -216,7 +166,7 @@ export default function Home() {
                           height={22}
                           className="experience-logo"
                         />
-                        <span>{`${item.company} — ${item.title}`}</span>
+                        <span>{`${item.company} - ${item.title}`}</span>
                       </span>
                     }
                     subtitle={
@@ -279,7 +229,6 @@ export default function Home() {
                       <span>{project.name}</span>
                     </span>
                     <span className="project-hint-icon" aria-hidden="true">
-                      ↗
                     </span>
                   </h3>
                   <button
@@ -384,9 +333,7 @@ export default function Home() {
                     ariaLabel={link.ariaLabel}
                     variant="secondary"
                     target={link.href.startsWith("http") ? "_blank" : "_self"}
-                    rel={
-                      link.href.startsWith("http") ? "noreferrer" : undefined
-                    }
+                    rel={link.href.startsWith("http") ? "noreferrer" : undefined}
                     icon={icon}
                   />
                 );

@@ -22,8 +22,10 @@ export default function Button({
 }: ButtonProps) {
   const className = variant === "secondary" ? "button secondary" : "button";
   const isAnchor = href.startsWith("#");
-  const finalTarget = isAnchor ? target : "_blank";
-  const finalRel = isAnchor ? rel : "noreferrer";
+  const isInternal = href.startsWith("/");
+  const isExternal = !isAnchor && !isInternal;
+  const finalTarget = isExternal ? target ?? "_blank" : target;
+  const finalRel = isExternal ? rel ?? "noreferrer" : rel;
 
   return (
     <Link

@@ -715,6 +715,170 @@ button {
   }
 }
 
+.blog-hero {
+  padding-top: 88px;
+}
+
+.blog-hero-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.blog-title,
+.blog-detail-title {
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.blog-intro {
+  max-width: 640px;
+}
+
+.blog-crumb {
+  font-size: 0.9rem;
+}
+
+.blog-featured-grid,
+.blog-related-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .blog-featured-grid,
+  .blog-related-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.blog-list {
+  display: grid;
+  gap: 18px;
+}
+
+.blog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.blog-link-title {
+  color: inherit;
+}
+
+.blog-meta,
+.blog-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.blog-card-actions {
+  margin-top: 6px;
+}
+
+.tag-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tag-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tag-button .badge {
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.tag-button.active .badge {
+  border-color: var(--accent-strong);
+  background: var(--accent);
+}
+
+.blog-detail {
+  padding-top: 96px;
+}
+
+.blog-back {
+  margin-bottom: 12px;
+}
+
+.blog-detail-tags {
+  margin-bottom: 18px;
+}
+
+.mdx-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mdx-h1 {
+  font-size: 2rem;
+  margin: 18px 0 8px;
+}
+
+.mdx-h2 {
+  font-size: 1.5rem;
+  margin: 18px 0 6px;
+}
+
+.mdx-h3 {
+  font-size: 1.2rem;
+  margin: 16px 0 6px;
+}
+
+.mdx-p {
+  margin: 0;
+}
+
+.mdx-ul,
+.mdx-ol {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.mdx-li {
+  margin: 6px 0;
+}
+
+.mdx-pre {
+  background: #f7f7f7;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  overflow-x: auto;
+}
+
+.mdx-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.95rem;
+}
+
+.mdx-blockquote {
+  margin: 0;
+  padding-left: 16px;
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+}
+
+.blog-related {
+  margin-top: 48px;
+}
+
 .footer {
   padding: 5px 0;
   border-top: 1px solid var(--border);

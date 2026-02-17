@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import type { NavItem, UiLabels } from "../../content/siteData";
 import logo from "../../content/logo.png";
@@ -10,9 +11,16 @@ type NavbarProps = {
   activeId: string | null;
   brand: string;
   ui: UiLabels;
+  mode: "portfolio" | "blog";
 };
 
-export default function Navbar({ items, activeId, brand, ui }: NavbarProps) {
+export default function Navbar({
+  items,
+  activeId,
+  brand,
+  ui,
+  mode,
+}: NavbarProps) {
   const [open, setOpen] = useState(false);
 
   const handleToggle = () => setOpen((prev) => !prev);
@@ -21,22 +29,37 @@ export default function Navbar({ items, activeId, brand, ui }: NavbarProps) {
   return (
     <header className="navbar">
       <div className="container navbar-inner">
-        <a href="/" className="brand" aria-label={brand}>
+        <Link href="/" className="brand" aria-label={brand}>
           <Image src={logo} alt={`logo`} height={55} />
-        </a>
+        </Link>
         <nav aria-label={ui.navLabel}>
           <div className="nav-links">
-            {items.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                className={`nav-link${activeId === item.id ? " active" : ""}`}
-                aria-label={item.label}
-                aria-current={activeId === item.id ? "page" : undefined}
+            {mode === "portfolio"
+              ? items.map((item) => (
+                  <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    className={`nav-link${activeId === item.id ? " active" : ""}`}
+                    aria-label={item.label}
+                    aria-current={activeId === item.id ? "page" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                ))
+              : null}
+            {mode === "portfolio" ? (
+              <Link href="/blog" className="button nav-cta" aria-label="Blog">
+                Blog
+              </Link>
+            ) : (
+              <Link
+                href="/"
+                className="button nav-cta"
+                aria-label="Portfolio"
               >
-                {item.label}
-              </a>
-            ))}
+                Portfolio
+              </Link>
+            )}
           </div>
         </nav>
         <button
@@ -72,18 +95,41 @@ export default function Navbar({ items, activeId, brand, ui }: NavbarProps) {
           className={`mobile-menu${open ? " open" : ""}`}
           role="menu"
         >
-          {items.map((item) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              className={`nav-link${activeId === item.id ? " active" : ""}`}
-              aria-label={item.label}
+          {mode === "portfolio"
+            ? items.map((item) => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  className={`nav-link${activeId === item.id ? " active" : ""}`}
+                  aria-label={item.label}
+                  onClick={handleClose}
+                  role="menuitem"
+                >
+                  {item.label}
+                </a>
+              ))
+            : null}
+          {mode === "portfolio" ? (
+            <Link
+              href="/blog"
+              className="button nav-cta"
+              aria-label="Blog"
               onClick={handleClose}
               role="menuitem"
             >
-              {item.label}
-            </a>
-          ))}
+              Blog
+            </Link>
+          ) : (
+            <Link
+              href="/"
+              className="button nav-cta"
+              aria-label="Portfolio"
+              onClick={handleClose}
+              role="menuitem"
+            >
+              Portfolio
+            </Link>
+          )}
         </div>
       </div>
     </header>
